@@ -1,6 +1,7 @@
-from pymodm import connect
-from pymodm import MongoModel, fields
+from pymodm import connect, MongoModel, fields
 from datetime import datetime
+import csv
+
 
 class Product(MongoModel):
     issue_type = fields.CharField()
@@ -110,9 +111,24 @@ def products_to_print(today):
     bracket_ready, idb_ready = ready_to_print()
     brackets_to_print = print_today(bracket_ready, today, 5)
     idb_to_print = print_today(idb_ready, today, 2)
-    to_print = brackets_to_print.append(idb_to_print)
+    to_print = brackets_to_print + idb_to_print
     return to_print
-    
+
+
+def convert_to_csv(items, filename):
+    columns = ["Issue Type", "Issue key", "Status", "Labels",
+               "Status Last Changed", "Desired Ship Date", "Priority"]
+    with open(filename, 'w') as f:
+        write = csv.writer(f)
+        write.writerow(columns)
+        for key in items:
+            item = Product.objects.raw({"_id": key}).first()
+            write.writerow([item.issue_type, item.issue_key, item.status, 
+                           item.labels, item.status_last_changed,
+                           item.desired_ship_date, item.priority])
+    return "Items recorded in {}".format(filename)
+
+
 if __name__ == "__main__":
     initialize_server()
     
@@ -120,5 +136,7 @@ if __name__ == "__main__":
     file_loc = 'data\\{}.csv'.format(file)
     load_data(file_loc)
     
-    print(products_to_print("27/Jan/22 5:00 PM"))
+    to_print = products_to_print("27/Jan/22 5:00 PM")
+    
+    print(convert_to_csv(to_print, "to_print.csv"))
     
