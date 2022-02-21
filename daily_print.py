@@ -64,25 +64,31 @@ def process_file(data):
 
 def ready_to_print():
     """Returns a list of all products ready to print
-    This function returns the issue key of bracket products with the status
-    "Brackets in Printer Queue" and IDB products with the status "Ready to
+    This function returns the issue key of all bracket products with the status
+    "Brackets in Printer Queue" and all IDB products with the status "Ready to
     Print".
     Args:
         none
     Returns:
         list of strings: a list of issue keys for brackets in printer queue
-        and IDB products ready to print
+        list of strings: a list of issue keys for IDB products ready to print
     """
-    ready_products = []
+    bracket_ready = []
+    idb_ready = []
     for item in Product.objects.raw({"issue_type":"MakeBrackets"}):
-        ready_products.append(item.issue_key)
-    return ready_products
+        if (item.status == "Brackets in Printer Queue"):
+            bracket_ready.append(item.issue_key)
+    for item in Product.objects.raw({"issue_type":"MakeIDB"}):
+        if (item.status == "Ready to Print"):
+            idb_ready.append(item.issue_key)
+    return bracket_ready, idb_ready
 
 
 if __name__ == "__main__":
     initialize_server()
     file = 'Exercise'
     file_loc = 'data\\{}.csv'.format(file)
-    data = read_file(file_loc)
-    analysis_status = process_file(data)
+    # data = read_file(file_loc)
+    # analysis_status = process_file(data)
+    bracket_ready, idb_ready = ready_to_print()
     
