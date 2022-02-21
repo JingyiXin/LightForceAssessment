@@ -1,8 +1,6 @@
 # LightForceAssessment
 This short exercise uses a database library and tabulates and returns a list of items that must be printed today in order to ship on time.
 
-## Instruction Manual
-Below are a set of instructions on how to operate this program.
 ### Requirements for Virtual Environment
 First, a virtual environment must be setup. To do this, create a virtual environment on the command line inside of the repository folder. Install the necessary modules using the command ```pip install -r requirements.txt```.
 ### Data Processing
