@@ -11,3 +11,8 @@ def read_file(file):
         data = f.readlines()
     return data
 
+if __name__ == "__main__":
+    file = 'Exercise'
+    file_loc = 'data\\{}.csv'.format(file)
+    data = read_file(file_loc)
+    
