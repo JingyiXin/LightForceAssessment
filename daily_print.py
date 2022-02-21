@@ -32,9 +32,9 @@ def read_file(file):
     This function reads each row in a csv file and adds it as an entry
     to a list. Each list element is a string.
     Args:
-        file (string): the file location of the ECG trace in a csv file
+        file (string): the file location of the csv file
     Returns:
-        list: a list containing all rows from the csv file
+        list of strings: a list containing all rows from the csv file
     """
     with open(file, 'r') as f:
         data = f.readlines()
@@ -65,6 +65,15 @@ def process_file(data):
 
 
 def load_data(file):
+    """Reads a csv file and transfers the data into a database
+    This function runs both the read_file(), which reads a csv file into
+    a list, and process_file, which reads each element of a list and creates
+    a pymongo entry for every line.
+    Args:
+        file (string): the file location of the csv file
+    Returns:
+        str: "data processed" if successful.
+    """
     data = read_file(file)
     status = process_file(data)
     return status
@@ -93,6 +102,16 @@ def ready_to_print():
 
 
 def print_today(print_ready, today, print_time):
+    """Returns a list of all products that must be printed today
+    This function returns the issue key of all products in the list
+    print_ready, where the desired ship date is less than the given print
+    time away from the given date and time.
+    Args:
+        none
+    Returns:
+        list of strings: a list of issue keys for products that must be
+        printed today.
+    """
     to_print = []
     print_time = print_time * 24 * 60 * 60
     today_datetime = datetime.strptime(today, '%d/%b/%y %H:%M %p')
@@ -108,6 +127,18 @@ def print_today(print_ready, today, print_time):
 
 
 def products_to_print(today):
+    """Runs several functions to returns a list of all products that must be
+    printed today
+    This function returns the issue key of all products that must be printed
+    today, including brackets in printer queue and IDB products ready to print,
+    that are less than 5 and 2 days respectively from their desired ship date.
+    Args:
+        today (string): a string in a format convertible to a datetime object
+        at the desired latest start print time
+    Returns:
+        list of strings: a list of issue keys for products that must be
+        printed today.
+    """
     bracket_ready, idb_ready = ready_to_print()
     brackets_to_print = print_today(bracket_ready, today, 5)
     idb_to_print = print_today(idb_ready, today, 2)
@@ -116,6 +147,17 @@ def products_to_print(today):
 
 
 def convert_to_csv(items, filename):
+    """Writes entries in database to a csv file
+    This function searches for all entries in the pymongo database for items
+    with an issue key listed in the given list, and writes their data into
+    a csv file.
+    Args:
+        items (list of strings): a list of all issue keys for products to
+        be included.
+        filename (string): the filename of the csv file to be written to
+    Returns:
+        string: "Items recorded in <filename>", if successful
+    """
     columns = ["Issue Type", "Issue key", "Status", "Labels",
                "Status Last Changed", "Desired Ship Date", "Priority"]
     with open(filename, 'w') as f:
