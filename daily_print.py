@@ -1,6 +1,4 @@
 from pymodm import connect
-connect("mongodb+srv://<username>:<password>@<clustername>-ba348.mongodb.net/<folder>?retryWrites=true&w=majority")
-
 from pymodm import MongoModel, fields
 
 class Product(MongoModel):
@@ -11,6 +9,20 @@ class Product(MongoModel):
     status_last_changed = fields.CharField()
     desired_ship_date = fields.CharField()
     priority = fields.CharField()
+
+
+def initialize_server():
+    """Initializes database connection
+    This function should be run first to connect to the cloud database.
+    Args:
+        none
+    Returns:
+        none
+    """
+    print("Connecting to MongoDB...")
+    connect("mongodb+srv://jx75:lightforce@lightforce.lp12b.mongodb.net/Light"
+            "Force?retryWrites=true&w=majority")
+    print("Connection attempt finished.")
 
 
 def read_file(file):
@@ -49,7 +61,26 @@ def process_file(data):
 
     return "data processed"
 
+
+def ready_to_print():
+    """Returns a list of all products ready to print
+    This function returns the issue key of bracket products with the status
+    "Brackets in Printer Queue" and IDB products with the status "Ready to
+    Print".
+    Args:
+        none
+    Returns:
+        list of strings: a list of issue keys for brackets in printer queue
+        and IDB products ready to print
+    """
+    ready_products = []
+    for item in Product.objects.raw({"issue_type":"MakeBrackets"}):
+        ready_products.append(item.issue_key)
+    return ready_products
+
+
 if __name__ == "__main__":
+    initialize_server()
     file = 'Exercise'
     file_loc = 'data\\{}.csv'.format(file)
     data = read_file(file_loc)
