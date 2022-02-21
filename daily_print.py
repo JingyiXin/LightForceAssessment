@@ -1,5 +1,6 @@
 from pymodm import connect
 from pymodm import MongoModel, fields
+from datetime import datetime
 
 class Product(MongoModel):
     issue_type = fields.CharField()
@@ -62,6 +63,12 @@ def process_file(data):
     return "data processed"
 
 
+def load_data(file):
+    data = read_file(file)
+    status = process_file(data)
+    return status
+
+
 def ready_to_print():
     """Returns a list of all products ready to print
     This function returns the issue key of all bracket products with the status
@@ -84,11 +91,34 @@ def ready_to_print():
     return bracket_ready, idb_ready
 
 
+def print_today(print_ready, today, print_time):
+    to_print = []
+    print_time = print_time * 24 * 60 * 60
+    today_datetime = datetime.strptime(today, '%d/%b/%y %H:%M %p')
+    for key in print_ready:
+        item = Product.objects.raw({"_id": key}).first()
+        ship_time = item.desired_ship_date
+        ship_datetime = datetime.strptime(ship_time, '%d/%b/%y %H:%M %p')
+        time_til_ship = ship_datetime - today_datetime
+        if (time_til_ship.total_seconds() <= print_time):
+            to_print.append(item.issue_key)
+            print(ship_time)
+    return to_print
+
+
+def products_to_print(today):
+    bracket_ready, idb_ready = ready_to_print()
+    brackets_to_print = print_today(bracket_ready, today, 5)
+    idb_to_print = print_today(idb_ready, today, 2)
+    to_print = brackets_to_print.append(idb_to_print)
+    return to_print
+    
 if __name__ == "__main__":
     initialize_server()
+    
     file = 'Exercise'
     file_loc = 'data\\{}.csv'.format(file)
-    # data = read_file(file_loc)
-    # analysis_status = process_file(data)
-    bracket_ready, idb_ready = ready_to_print()
+    load_data(file_loc)
+    
+    print(products_to_print("27/Jan/22 5:00 PM"))
     
